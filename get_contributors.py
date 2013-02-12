@@ -26,6 +26,9 @@ repos = [
     'solitude',
     'webdev-bootcamp',
     'zamboni',
+    'airmozilla',
+    'socorro',
+    'socorro-crashstats',
 ]
 base_url = 'https://api.github.com/repos/mozilla'
 commit_levels = [100, 50, 25, 10, 1]
