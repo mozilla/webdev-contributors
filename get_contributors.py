@@ -11,7 +11,7 @@ repos = [
     'fireplace',
     'fjord',
     'funfactory',
-    'high-fidelity', # Mozilla's Podcasts Reference App
+    'high-fidelity',  # Mozilla's Podcasts Reference App
     'input.mozilla.org',
     'kitsune',
     'kuma',
@@ -25,13 +25,13 @@ repos = [
     'webdev-bootcamp',
     'zamboni',
 ]
+base_url = 'https://api.github.com/repos/mozilla'
 commit_levels = [100, 50, 25, 10, 1]
-base_url = "https://api.github.com/repos/mozilla"
 contributors = {}
 contributors_by_level = {}
 
 
-# Figure out the # of contributions per contributor:
+# Figure out the number of contributions per contributor:
 for repo in repos:
     url = '%s/%s/contributors' % (base_url, repo)
     for repocontributor in requests.get(url).json():
@@ -42,7 +42,7 @@ for repo in repos:
             contributor.get('contributions', 0) + contributions)
         contributor.setdefault('repos', []).append(repo)
 
-# Group the contributors into levels by # of contributions:
+# Group the contributors into levels by number of contributions:
 for user, contributor in contributors.items():
     contributions = contributor['contributions']
     for level in commit_levels:
@@ -52,12 +52,14 @@ for user, contributor in contributors.items():
 
 
 def print_contributors():
+    """Output contributors and their number of contributions."""
     for user, contributor in contributors.items():
         print '%s, %s, %s' % (
             user, contributor['contributions'], ' '.join(contributor['repos']))
 
 
 def print_contributors_by_level():
+    """Output contributors, based on their contribution levels."""
     for level in commit_levels:
         print '========== %s+ ==========' % level
         for user in contributors_by_level[level]:
