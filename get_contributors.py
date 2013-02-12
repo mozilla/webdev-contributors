@@ -2,16 +2,29 @@ import requests
 
 
 repos = [
+    'amo-validator',
+    'app-validator',
     'bedrock',
     'django-browserid',
-    'input.mozilla.org',
+    'elmo',
+    'firefox-flicks',
+    'fireplace',
     'fjord',
+    'funfactory',
+    'high-fidelity', # Mozilla's Podcasts Reference App
+    'input.mozilla.org',
     'kitsune',
     'kuma',
     'mozillians',
+    'nocturnal',
+    'playdoh',
+    'playdoh-docs',
     'remo',
     'socorro',
-    'zamboni',]
+    'solitude',
+    'webdev-bootcamp',
+    'zamboni',
+]
 commit_levels = [100, 50, 25, 10, 1]
 base_url = "https://api.github.com/repos/mozilla"
 contributors = {}
