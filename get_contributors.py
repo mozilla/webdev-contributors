@@ -6,6 +6,7 @@ repos = [
     'app-validator',
     'bedrock',
     'django-browserid',
+    'elasticutils',
     'elmo',
     'firefox-flicks',
     'fireplace',
