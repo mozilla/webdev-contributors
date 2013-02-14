@@ -29,6 +29,7 @@ repos = [
     'airmozilla',
     'socorro',
     'socorro-crashstats',
+    'unicode-slugify',
     'webdev-contributors',
 ]
 base_url = 'https://api.github.com/repos/mozilla'
