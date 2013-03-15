@@ -59,7 +59,7 @@ contributors_by_level = {}
 def main():
     # Figure out the number of contributions per contributor:
     for repo in repos:
-        print "Fetching contributors for %s" % repo
+        print 'Fetching contributors for %s' % repo
 
         repocontributors = api_get('%s/contributors' % repo, None,
                                    'repocontributors', GITHUB_REPOS_CACHE_AGE)
@@ -67,13 +67,13 @@ def main():
             username = repocontributor['login']
             contributions = repocontributor['contributions']
             contributor = contributors.setdefault(username, {
-                "username": username, "email": None
+                'username': username, 'email': None
             })
             contributor['contributions'] = (
                 contributor.get('contributions', 0) + contributions)
             contributor.setdefault('repos', []).append(repo)
             if not contributor['email']:
-                print "Fetching email for %s" % (username,)
+                print 'Fetching email for %s' % (username,)
                 commits = api_get('%s/commits' % repo, dict(author=username),
                                   'email', GITHUB_EMAIL_CACHE_AGE)
                 try:
@@ -103,9 +103,10 @@ def print_contributors():
 def print_contributors_by_level():
     """Output contributors, based on their contribution levels."""
     for level in commit_levels:
-        print '========== %s+ ==========' % level
-        for contributor in contributors_by_level[level]:
-            print '%s <%s>' % (contributor['username'], contributor['email'])
+        if level in contributors_by_level:
+            print '========== %s+ ==========' % level
+            for contributor in contributors_by_level[level]:
+                print '%s <%s>' % (contributor['username'], contributor['email'])
 
 
 def api_url(url, params=None):
@@ -126,7 +127,7 @@ def api_url(url, params=None):
 def api_get(path, params=None, cache_name=False, cache_timeout=3600):
     """Cached HTTP GET to GitHub repos API"""
     url = api_url(path, params)
-    
+
     # If no cache name, then cache is disabled.
     if not cache_name:
         return requests.get(url).json()
@@ -134,7 +135,7 @@ def api_get(path, params=None, cache_name=False, cache_timeout=3600):
     # Build a cache path based on MD5 of URL
     path_hash = hashlib.md5(url).hexdigest()
     cache_path = CACHE_PATH_TMPL % (cache_name, path_hash)
-    
+
     # Create the cache path, if necessary
     cache_dir = dirname(cache_path)
     if not os.path.exists(cache_dir):
