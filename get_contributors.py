@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-import os
-import time
-from os.path import dirname
 import hashlib
-import urllib
-import requests
-import logging
 import json
+import logging
+import os
+import requests
+import time
+import urllib
+from os.path import dirname
 
 
 # Quick & dirty env-based config
@@ -18,9 +18,13 @@ GITHUB_EMAIL_CACHE_AGE = int(os.getenv('GITHUB_EMAIL_CACHE_AGE',
 GITHUB_REPOS_CACHE_AGE = int(os.getenv('GITHUB_REPOS_CACHE_AGE',
                                        60 * 60))
 
+BADGES_BASE_URL = 'https://badges.mozilla.org/en-US/badges/badge/'
+BADGES_VALET_USERNAME = os.getenv('BADGES_VALET_USERNAME', None)
+BADGES_VALET_PASSWORD = os.getenv('BADGES_VALET_PASSWORD', None)
+
 CACHE_PATH_TMPL = 'cache/%s/%s'
 
-repos = [
+REPOS = [
     'amo-validator',
     'app-validator',
     'bedrock',
@@ -50,18 +54,27 @@ repos = [
     'unicode-slugify',
     'webdev-contributors',
 ]
-base_url = 'https://api.github.com/repos/mozilla'
-commit_levels = [100, 50, 25, 10, 1]
-contributors = {}
-contributors_by_level = {}
+GITHUB_BASE_URL = 'https://api.github.com/repos/mozilla'
+COMMIT_LEVELS = [100, 50, 25, 10, 1]
+COMMIT_BADGES = {
+    1: 'webdev-1-pull-request-merged',
+    10: 'webdev-10-pull-requests-merged',
+    25: 'webdev-25-pull-requests-merged',
+    50: 'webdev-50-pull-requests-merged',
+    100: 'webdev-100-pull-requests-merged',
+}
+FORK_BADGE = 'webdev-fork-a-repo'
+PULL_REQUEST_BADGE = 'webdev-submit-a-pull-request'
 
 
 def main():
+    contributors = {}
+
     # Figure out the number of contributions per contributor:
-    for repo in repos:
+    for repo in REPOS:
         print 'Fetching contributors for %s' % repo
 
-        repocontributors = api_get('%s/contributors' % repo, None,
+        repocontributors = github_api_get('%s/contributors' % repo, None,
                                    'repocontributors', GITHUB_REPOS_CACHE_AGE)
         for repocontributor in repocontributors:
             username = repocontributor['login']
@@ -74,7 +87,7 @@ def main():
             contributor.setdefault('repos', []).append(repo)
             if not contributor['email']:
                 print 'Fetching email for %s' % (username,)
-                commits = api_get('%s/commits' % repo, dict(author=username),
+                commits = github_api_get('%s/commits' % repo, dict(author=username),
                                   'email', GITHUB_EMAIL_CACHE_AGE)
                 try:
                     first = commits[0]['commit']
@@ -82,36 +95,47 @@ def main():
                 except:
                     pass
 
-    # Group the contributors into levels by number of contributions:
+    # For now, just make all of them part of forked and pull request submitted.
+    # They probably forked and PR'd to contribute.
+    # TODO: Add users that havent commited yet but have forks and PRs.
     for user, contributor in contributors.items():
-        contributions = contributor['contributions']
-        for level in commit_levels:
-            if contributions >= level:
-                contributors_by_level.setdefault(level, []).append(contributor)
-                break
+        contributor['forked'] = True
+        contributor['pull_requests'] = True
 
-    print_contributors_by_level()
+    award_badges(contributors)
+
+    #print_contributors_by_level(contributors)
 
 
-def print_contributors():
+def print_contributors(contributors):
     """Output contributors and their number of contributions."""
     for user, contributor in contributors.items():
         print '%s, %s, %s' % (
             user, contributor['contributions'], ' '.join(contributor['repos']))
 
 
-def print_contributors_by_level():
+def print_contributors_by_level(contributors):
     """Output contributors, based on their contribution levels."""
-    for level in commit_levels:
+    contributors_by_level = {}
+
+    # Group the contributors into levels by number of contributions:
+    for user, contributor in contributors.items():
+        contributions = contributor['contributions']
+        for level in COMMIT_LEVELS:
+            if contributions >= level:
+                contributors_by_level.setdefault(level, []).append(contributor)
+                break
+
+    for level in COMMIT_LEVELS:
         if level in contributors_by_level:
             print '========== %s+ ==========' % level
             for contributor in contributors_by_level[level]:
                 print '%s <%s>' % (contributor['username'], contributor['email'])
 
 
-def api_url(url, params=None):
+def github_api_url(url, params=None):
     """Append the GitHub client details, if available"""
-    url = '%s/%s' % (base_url, url)
+    url = '%s/%s' % (GITHUB_BASE_URL, url)
     if not params:
         params = {}
     if GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET:
@@ -124,9 +148,9 @@ def api_url(url, params=None):
     return url
 
 
-def api_get(path, params=None, cache_name=False, cache_timeout=3600):
+def github_api_get(path, params=None, cache_name=False, cache_timeout=3600):
     """Cached HTTP GET to GitHub repos API"""
-    url = api_url(path, params)
+    url = github_api_url(path, params)
 
     # If no cache name, then cache is disabled.
     if not cache_name:
@@ -155,6 +179,85 @@ def api_get(path, params=None, cache_name=False, cache_timeout=3600):
         json.dump(data, open(cache_path, 'w'))
 
     return data
+
+
+def award_badges(contributors):
+    """Award badges to contributors based on their contributions."""
+
+    if not BADGES_VALET_USERNAME or not BADGES_VALET_PASSWORD:
+        print ('You must set BADGES_VALET_USERNAME and BADGES_VALET_PASSWORD'
+               ' for awarding badges.')
+        return
+
+    badges_to_award = collect_badges_to_award(contributors)
+
+    for badge, emails in badges_to_award.items():
+        award_badge(badge, emails)
+        # print 'Badge: %s' % badge
+        # for email in emails:
+        #     print '    %s' % email
+
+
+def collect_badges_to_award(contributors):
+    """Group all the badges with the emails they need to be awarded to."""
+    badges_to_award = {}
+
+    for user, contributor in contributors.items():
+        if 'email' not in contributor:
+            print 'No email found for %s' % contributor['username']
+            continue
+
+        email = contributor['email']
+
+        if contributor['forked']:
+            badges_to_award.setdefault(FORK_BADGE, []).append(email)
+
+        if contributor['pull_requests']:
+            badges_to_award.setdefault(
+                PULL_REQUEST_BADGE, []).append(email)
+
+
+        if 'contributions' not in contributor:
+            continue
+
+        for commits, badge in COMMIT_BADGES.items():
+            if contributor['contributions'] > commits:
+                badges_to_award.setdefault(badge, []).append(email)
+
+    return badges_to_award
+
+
+def award_badge(badge_slug, contributor_emails):
+    """Award a badge with the specified slug to the specified emails."""
+    print 'Awarding the %s badge.' % badge_slug
+
+    r = requests.post(
+        '%s%s/awards' % (BADGES_BASE_URL, badge_slug),
+        data=json.dumps({'emails': contributor_emails, 'description': ''}),
+        headers={'content-type': 'application/json'},
+        verify=False, # To workaround SSL cert issue.
+        auth=(BADGES_VALET_USERNAME, BADGES_VALET_PASSWORD),)
+
+    if r.status_code != 200:
+        print 'Something went wrong awarding badge %s (Status=%s).' % (
+            badge_slug, r.status_code)
+        print r.content
+        return
+
+    response = json.loads(r.content)
+
+    if 'successes' in response:
+        successes = response['successes']
+        print 'Badge awarded to: %s' % [k for k in successes.keys()]
+
+    if 'errors' in response:
+        errors = response['errors']
+        already_awarded = [x for x in errors.keys()
+                           if errors[x] == 'ALREADYAWARDED']
+        print 'Badge had already been awarded to: %s' % (
+            [k for k in already_awarded])
+        print 'Error awarding badge to: %s' % (
+            [k for k in errors if k not in already_awarded])
 
 
 def file_age(fn):
