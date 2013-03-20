@@ -221,7 +221,7 @@ def collect_badges_to_award(contributors):
             continue
 
         for commits, badge in COMMIT_BADGES.items():
-            if contributor['contributions'] > commits:
+            if contributor['contributions'] >= commits:
                 badges_to_award.setdefault(badge, []).append(email)
 
     return badges_to_award
