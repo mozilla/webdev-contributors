@@ -53,6 +53,8 @@ REPOS = [
     'socorro-crashstats',
     'unicode-slugify',
     'webdev-contributors',
+    'django-badger',
+    'badges.mozilla.org',
 ]
 GITHUB_BASE_URL = 'https://api.github.com/repos/mozilla'
 COMMIT_LEVELS = [100, 50, 25, 10, 1]
