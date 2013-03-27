@@ -27,6 +27,8 @@ CACHE_PATH_TMPL = 'cache/%s/%s'
 REPOS = [
     'amo-validator',
     'app-validator',
+    'basket',
+    'basket-client',
     'bedrock',
     'django-browserid',
     'elasticutils',
@@ -44,6 +46,7 @@ REPOS = [
     'playdoh',
     'playdoh-docs',
     'remo',
+    'scrumbugz',
     'socorro',
     'solitude',
     'webdev-bootcamp',
