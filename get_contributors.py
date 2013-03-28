@@ -47,7 +47,6 @@ REPOS = [
     'playdoh-docs',
     'remo',
     'scrumbugz',
-    'socorro',
     'solitude',
     'webdev-bootcamp',
     'zamboni',
