@@ -25,6 +25,7 @@ BADGES_VALET_PASSWORD = os.getenv('BADGES_VALET_PASSWORD', None)
 CACHE_PATH_TMPL = 'cache/%s/%s'
 
 REPOS = [
+    'airmozilla',
     'amo-validator',
     'app-validator',
     'basket',
@@ -55,7 +56,6 @@ REPOS = [
     'KitchenSink',
     'brick',
     'socorro',
-    'socorro-crashstats',
     'unicode-slugify',
     'webdev-contributors',
     'django-badger',
