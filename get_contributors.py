@@ -26,11 +26,15 @@ CACHE_PATH_TMPL = 'cache/%s/%s'
 
 REPOS = [
     'airmozilla',
+    'airmozilla',
     'amo-validator',
     'app-validator',
+    'badges.mozilla.org',
     'basket',
     'basket-client',
     'bedrock',
+    'brick',
+    'django-badger',
     'django-browserid',
     'elasticutils',
     'elmo',
@@ -40,6 +44,7 @@ REPOS = [
     'funfactory',
     'high-fidelity',  # Mozilla's Podcasts Reference App
     'input.mozilla.org',
+    'KitchenSink',
     'kitsune',
     'kuma',
     'mozillians',
@@ -48,18 +53,13 @@ REPOS = [
     'playdoh-docs',
     'remo',
     'scrumbugz',
-    'solitude',
-    'webdev-bootcamp',
-    'zamboni',
-    'airmozilla',
     'SocialShare',
-    'KitchenSink',
-    'brick',
     'socorro',
+    'solitude',
     'unicode-slugify',
+    'webdev-bootcamp',
     'webdev-contributors',
-    'django-badger',
-    'badges.mozilla.org',
+    'zamboni',
 ]
 GITHUB_BASE_URL = 'https://api.github.com/repos/mozilla'
 COMMIT_LEVELS = [100, 50, 25, 10, 1]
