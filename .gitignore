@@ -1,3 +1,6 @@
+# runtime
+cache
+
 *.py[cod]
 
 # C extensions
