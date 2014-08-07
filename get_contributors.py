@@ -33,7 +33,6 @@ REPOS = [
     'basket',
     'basket-client',
     'bedrock',
-    'brick',
     'django-badger',
     'django-browserid',
     'elasticutils',
