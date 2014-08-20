@@ -26,7 +26,6 @@ CACHE_PATH_TMPL = 'cache/%s/%s'
 
 REPOS = [
     'airmozilla',
-    'airmozilla',
     'amo-validator',
     'app-validator',
     'badges.mozilla.org',
